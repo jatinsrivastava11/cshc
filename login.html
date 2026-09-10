@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGN IN // CS HEISTS CLUB</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
+  :root{
+    --bg:#040504; --green:#3dff6e; --green-dim:#1f7a3a; --cyan:#4dfff0;
+    --text:#c8f5d4; --text-dim:#5c8a6a; --hairline:#123a1f; --error:#ff5c5c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--text); font-family:'Space Mono', monospace;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    position:relative; overflow-x:hidden;
+  }
+  body::before{
+    content:''; position:fixed; inset:0; z-index:100; pointer-events:none;
+    background:repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.35) 3px, rgba(0,0,0,0) 4px);
+    mix-blend-mode:multiply;
+  }
+  body::after{
+    content:''; position:fixed; inset:0; z-index:99; pointer-events:none;
+    background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%);
+  }
+
+  .card{width:100%; max-width:380px; border:1px solid var(--hairline); background:rgba(61,255,110,0.02); padding:36px 32px;}
+  .brand{display:flex; align-items:center; gap:10px; font-family:'VT323', monospace; font-size:22px; color:var(--green); text-shadow:0 0 10px rgba(61,255,110,0.5); margin-bottom:6px;}
+  .brand .sq{width:9px; height:9px; background:var(--green); box-shadow:0 0 8px var(--green);}
+  .sub{font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:28px;}
+
+  .tabs{display:flex; border:1px solid var(--hairline); margin-bottom:24px;}
+  .tab{flex:1; text-align:center; padding:10px; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; cursor:pointer; color:var(--text-dim); background:none; border:none; font-family:'Space Mono', monospace;}
+  .tab.active{color:var(--green); background:rgba(61,255,110,0.06);}
+
+  label{font-size:11px; color:var(--text-dim); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;}
+  input{
+    width:100%; background:#0a0c0a; border:1px solid var(--hairline); color:var(--text);
+    font-family:'Space Mono', monospace; font-size:13px; padding:11px 12px; margin-bottom:16px;
+  }
+  input:focus{outline:none; border-color:var(--green-dim);}
+
+  .btn{
+    width:100%; font-family:'Space Mono', monospace; font-size:12px; padding:13px;
+    background:var(--green); color:var(--bg); border:none; text-transform:uppercase;
+    letter-spacing:0.05em; cursor:pointer; box-shadow:0 0 10px rgba(61,255,110,0.3);
+  }
+  .btn:hover{background:var(--cyan); box-shadow:0 0 10px rgba(77,255,240,0.4);}
+  .btn:disabled{opacity:0.4; cursor:not-allowed;}
+
+  .status{font-size:12px; margin-top:16px; min-height:18px;}
+  .status.err{color:var(--error);}
+  .status.ok{color:var(--green);}
+
+  .granted{display:none; text-align:center;}
+  .granted.show{display:block;}
+  .granted .lock{font-family:'VT323', monospace; font-size:22px; color:var(--green); text-shadow:0 0 10px rgba(61,255,110,0.5); margin-bottom:10px;}
+  .granted p{font-size:13px; color:var(--text-dim); margin-bottom:20px;}
+  .signout{font-size:11px; color:var(--text-dim); text-decoration:underline; cursor:pointer; background:none; border:none; font-family:'Space Mono',monospace;}
+
+  .form-panel{display:block;}
+  .form-panel.hide{display:none;}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="brand"><span class="sq"></span>CS HEISTS CLUB</div>
+  <div class="sub">Access requires clearance</div>
+
+  <div id="authArea">
+    <div class="tabs">
+      <button class="tab active" id="tabSignin" onclick="switchTab('signin')">Sign In</button>
+      <button class="tab" id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <div class="form-panel" id="signinPanel">
+      <label>Email</label>
+      <input type="email" id="siEmail" placeholder="abc1234@psu.edu">
+      <label>Password</label>
+      <input type="password" id="siPassword" placeholder="••••••••">
+      <button class="btn" id="siBtn" onclick="signIn()">Sign In</button>
+      <div class="status" id="siStatus"></div>
+    </div>
+
+    <div class="form-panel hide" id="signupPanel">
+      <label>Name</label>
+      <input type="text" id="suName" placeholder="Your name">
+      <label>Email</label>
+      <input type="email" id="suEmail" placeholder="abc1234@psu.edu">
+      <label>Password</label>
+      <input type="password" id="suPassword" placeholder="At least 6 characters">
+      <button class="btn" id="suBtn" onclick="signUp()">Create Account</button>
+      <div class="status" id="suStatus"></div>
+    </div>
+  </div>
+
+  <div class="granted" id="granted">
+    <div class="lock">[ ACCESS GRANTED ]</div>
+    <p id="grantedMsg">You're in. The puzzle system isn't live yet — check back once the club officially launches.</p>
+    <button class="signout" onclick="signOutUser()">Sign out</button>
+  </div>
+</div>
+
+<script>
+/* ===== SETUP NEEDED =====
+   1. Go to console.firebase.google.com, create a project
+   2. Register a web app ('</>' icon) and copy your firebaseConfig
+   3. Paste it below, replacing the placeholder object
+   4. In Build -> Authentication -> Sign-in method, enable Email/Password
+   ========================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAln4ntRaPir4fU5KmDk0VXl5kxZqjUle8",
+  authDomain: "cshc-at-penn-state.firebaseapp.com",
+  projectId: "cshc-at-penn-state",
+  storageBucket: "cshc-at-penn-state.firebasestorage.app",
+  messagingSenderId: "812319278856",
+  appId: "1:812319278856:web:490dcdda5865c413a7cebd"
+};
+
+const configured = !firebaseConfig.apiKey.includes("YOUR_");
+let auth = null;
+if(configured){
+  firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+}
+
+function switchTab(which){
+  document.getElementById('tabSignin').classList.toggle('active', which==='signin');
+  document.getElementById('tabSignup').classList.toggle('active', which==='signup');
+  document.getElementById('signinPanel').classList.toggle('hide', which!=='signin');
+  document.getElementById('signupPanel').classList.toggle('hide', which!=='signup');
+}
+
+function showGranted(email){
+  document.getElementById('authArea').style.display = 'none';
+  document.getElementById('granted').classList.add('show');
+  document.getElementById('grantedMsg').textContent =
+    `Signed in as ${email}. The puzzle system isn't live yet — check back once the club officially launches.`;
+}
+
+function friendlyError(err){
+  const map = {
+    'auth/email-already-in-use': 'That email already has an account — try signing in instead.',
+    'auth/invalid-email': 'That email address looks invalid.',
+    'auth/weak-password': 'Password needs to be at least 6 characters.',
+    'auth/user-not-found': 'No account found with that email.',
+    'auth/wrong-password': 'Incorrect password.',
+    'auth/invalid-credential': 'Incorrect email or password.'
+  };
+  return map[err.code] || err.message;
+}
+
+async function signUp(){
+  const status = document.getElementById('suStatus');
+  if(!configured){ status.textContent = 'Backend not connected yet — add your Firebase config in the code.'; status.className='status err'; return; }
+  const name = document.getElementById('suName').value.trim();
+  const email = document.getElementById('suEmail').value.trim();
+  const password = document.getElementById('suPassword').value;
+  if(!name || !email || password.length < 6){
+    status.textContent = 'Fill in all fields — password needs at least 6 characters.'; status.className='status err'; return;
+  }
+  status.textContent = 'Creating account...'; status.className='status';
+  try{
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    await cred.user.updateProfile({ displayName: name });
+    status.textContent = 'Account created.'; status.className='status ok';
+    showGranted(email);
+  } catch(err){
+    status.textContent = friendlyError(err); status.className='status err';
+  }
+}
+
+async function signIn(){
+  const status = document.getElementById('siStatus');
+  if(!configured){ status.textContent = 'Backend not connected yet — add your Firebase config in the code.'; status.className='status err'; return; }
+  const email = document.getElementById('siEmail').value.trim();
+  const password = document.getElementById('siPassword').value;
+  if(!email || !password){ status.textContent = 'Enter your email and password.'; status.className='status err'; return; }
+  status.textContent = 'Checking credentials...'; status.className='status';
+  try{
+    await auth.signInWithEmailAndPassword(email, password);
+    showGranted(email);
+  } catch(err){
+    status.textContent = friendlyError(err); status.className='status err';
+  }
+}
+
+async function signOutUser(){
+  if(auth) await auth.signOut();
+  document.getElementById('authArea').style.display = 'block';
+  document.getElementById('granted').classList.remove('show');
+  document.getElementById('siEmail').value = '';
+  document.getElementById('siPassword').value = '';
+}
+
+// stay signed in across reloads
+if(configured){
+  auth.onAuthStateChanged((user) => {
+    if(user) showGranted(user.email);
+  });
+}
+</script>
+</body>
+</html>
