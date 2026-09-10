@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COMPUTER SCIENCE HEISTS CLUB // PENN STATE</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --bg:#040504;
+    --green:#3dff6e;
+    --green-dim:#1f7a3a;
+    --green-faint:#0d3018;
+    --cyan:#4dfff0;
+    --text:#c8f5d4;
+    --text-dim:#5c8a6a;
+    --hairline:#123a1f;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Space Mono', monospace;
+    line-height:1.6;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* ---- CRT overlay effects ---- */
+  body::before{
+    content:''; position:fixed; inset:0; z-index:100; pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.35) 3px, rgba(0,0,0,0) 4px
+    );
+    mix-blend-mode:multiply;
+  }
+  body::after{
+    content:''; position:fixed; inset:0; z-index:99; pointer-events:none;
+    background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%);
+  }
+  @keyframes flicker{
+    0%,100%{opacity:1;} 92%{opacity:1;} 93%{opacity:0.86;} 94%{opacity:1;} 97%{opacity:0.92;} 98%{opacity:1;}
+  }
+  .wrap{animation:flicker 7s infinite;}
+
+  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
+  .cursor{display:inline-block; width:0.55em; height:1em; background:var(--green); vertical-align:-2px; animation:blink 1s step-start infinite; box-shadow:0 0 8px var(--green);}
+
+  ::selection{background:var(--green); color:#000;}
+
+  /* ---- nav ---- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px; background:rgba(4,5,4,0.9);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-family:'VT323', monospace; font-size:22px; color:var(--green); text-shadow:0 0 10px rgba(61,255,110,0.5); letter-spacing:0.02em; white-space:nowrap;}
+  .brand .sq{width:10px; height:10px; background:var(--green); box-shadow:0 0 8px var(--green); flex-shrink:0;}
+  .navlinks{display:flex; gap:34px; font-size:12px;}
+  .navlinks a{color:var(--text-dim); text-decoration:none; text-transform:uppercase; letter-spacing:0.06em; padding:4px 0; border-bottom:1px solid transparent; transition:0.15s; cursor:pointer;}
+  .navlinks a:hover{color:var(--green); border-color:var(--green-dim); text-shadow:0 0 6px rgba(61,255,110,0.6);}
+  .nav-cta{
+    font-size:11px; color:var(--bg); background:var(--green);
+    padding:8px 18px; text-decoration:none; text-transform:uppercase; letter-spacing:0.06em;
+    box-shadow:0 0 10px rgba(61,255,110,0.4); border:none; cursor:pointer; font-family:'Space Mono',monospace;
+  }
+  .nav-cta:hover{background:var(--cyan); box-shadow:0 0 10px rgba(77,255,240,0.5);}
+  .navtoggle{display:none; flex-direction:column; gap:5px; cursor:pointer; background:none; border:none;}
+  .navtoggle span{width:22px; height:2px; background:var(--green);}
+
+  @media(max-width:700px){
+    .navlinks{
+      position:fixed; top:56px; left:0; right:0; background:var(--bg);
+      flex-direction:column; gap:0; border-bottom:1px solid var(--hairline);
+      max-height:0; overflow:hidden; transition:max-height 0.25s ease; z-index:60;
+    }
+    .navlinks.open{max-height:320px;}
+    .navlinks a{padding:16px 32px; border-bottom:1px solid var(--hairline); width:100%;}
+    .navtoggle{display:flex;}
+    .brand{font-size:16px;}
+  }
+
+  /* ---- hero ---- */
+  .hero{max-width:800px; margin:0 auto; padding:100px 24px 70px; text-align:center;}
+  .boot{font-size:12px; color:var(--text-dim); margin-bottom:24px; text-transform:uppercase; letter-spacing:0.08em;}
+  .boot .ok{color:var(--green);}
+  h1{
+    font-family:'VT323', monospace; font-weight:400;
+    font-size:clamp(42px, 7vw, 74px); line-height:1.05; margin-bottom:24px;
+    color:var(--green); text-shadow:0 0 14px rgba(61,255,110,0.45), 0 0 2px rgba(61,255,110,0.8);
+  }
+  .hero p{color:var(--text-dim); font-size:15px; max-width:54ch; margin:0 auto 36px;}
+  .hero-actions{display:flex; gap:14px; justify-content:center; flex-wrap:wrap;}
+  .btn{
+    font-family:'Space Mono', monospace; font-size:12px; padding:13px 26px;
+    text-decoration:none; border:1px solid var(--green-dim); color:var(--green);
+    text-transform:uppercase; letter-spacing:0.05em; transition:0.15s; background:none; cursor:pointer;
+  }
+  .btn:hover{background:rgba(61,255,110,0.08); box-shadow:0 0 14px rgba(61,255,110,0.25);}
+  .btn.ghost{color:var(--text-dim); border-color:var(--hairline);}
+  .btn.ghost:hover{border-color:var(--green-dim); color:var(--green);}
+  .btn.solid{background:var(--green); color:var(--bg); border-color:var(--green);}
+  .btn.solid:hover{background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 14px rgba(77,255,240,0.35);}
+
+  .ascii-div{text-align:center; color:var(--hairline); font-size:12px; letter-spacing:4px; user-select:none; margin:0 auto; max-width:800px; padding:0 24px;}
+
+  /* ---- sections ---- */
+  section{max-width:920px; margin:0 auto; padding:74px 24px;}
+  .section-label{font-family:'VT323',monospace; font-size:18px; color:var(--green-dim); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;}
+  .section-label b{color:var(--green); text-shadow:0 0 6px rgba(61,255,110,0.5);}
+  h2{font-family:'VT323', monospace; font-weight:400; font-size:34px; margin-bottom:16px; color:var(--text);}
+  .lead{color:var(--text-dim); font-size:14.5px; max-width:62ch; margin-bottom:40px;}
+
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--hairline);}
+  .grid3 .cell{background:var(--bg); padding:24px 20px;}
+  .cell .num{font-family:'VT323',monospace; font-size:22px; color:var(--green);}
+  .cell h3{font-size:13px; font-weight:700; margin:10px 0 8px; text-transform:uppercase; letter-spacing:0.03em;}
+  .cell p{font-size:12.5px; color:var(--text-dim);}
+  @media(max-width:700px){.grid3{grid-template-columns:1fr;}}
+
+  .crew{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1px; background:var(--hairline); margin-top:10px;}
+  .crew .member{background:var(--bg); padding:22px 20px;}
+  .crew .member .role{font-family:'VT323',monospace; font-size:14px; color:var(--green-dim); text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;}
+  .crew .member .name{font-size:15px; color:var(--text); margin-bottom:6px;}
+  .crew .member .blurb{font-size:12px; color:var(--text-dim);}
+
+  .timeline{border-left:1px solid var(--hairline); margin-left:6px; padding-left:26px;}
+  .tstep{position:relative; padding-bottom:30px;}
+  .tstep:last-child{padding-bottom:0;}
+  .tstep::before{content:''; position:absolute; left:-31px; top:4px; width:9px; height:9px; background:var(--bg); border:2px solid var(--green-dim);}
+  .tstep .wk{font-family:'VT323',monospace; font-size:16px; color:var(--green); margin-bottom:4px; letter-spacing:0.03em;}
+  .tstep .desc{font-size:13.5px; color:var(--text-dim);}
+
+  .signin-box{
+    border:1px solid var(--hairline); background:rgba(61,255,110,0.02);
+    padding:40px 32px; text-align:center; max-width:420px; margin:0 auto;
+  }
+  .signin-box .lock{font-family:'VT323',monospace; font-size:15px; color:var(--text-dim); margin-bottom:18px; text-transform:uppercase; letter-spacing:0.05em;}
+  .signin-box .status{font-size:12px; color:var(--text-dim); margin-top:16px;}
+
+  footer{border-top:1px solid var(--hairline); padding:40px 24px; text-align:center; font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em;}
+  footer .sq{color:var(--green);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav>
+  <div class="brand"><span class="sq"></span>CS HEISTS CLUB</div>
+  <div class="navlinks" id="navlinks">
+    <a href="#team">About Team</a>
+    <a href="#how">How It Works</a>
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('signin').scrollIntoView({behavior:'smooth'})">Sign In</button>
+  <button class="navtoggle" onclick="document.getElementById('navlinks').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="hero">
+  <div class="boot">PENN STATE // COMPUTER SCIENCE HEISTS CLUB // STATUS: <span class="ok">PLANNING THE JOB</span></div>
+  <h1>THE VAULT IS<br>DIGITAL NOW.<span class="cursor"></span></h1>
+  <p>Computer Science Heists Club runs a semester-long series of puzzle "jobs" — each one built around a real CS or security concept you have to actually crack, not just read about.</p>
+  <div class="hero-actions">
+    <button class="btn solid" onclick="document.getElementById('signin').scrollIntoView({behavior:'smooth'})">Sign In</button>
+    <a href="#how" class="btn ghost">how it works</a>
+  </div>
+</div>
+<div class="ascii-div">— — — — — — — — — — — — — — — — — — — — — — — —</div>
+
+<section id="team">
+  <div class="section-label"><b>[ 01 ]</b> ABOUT TEAM</div>
+  <h2>Who's running the job</h2>
+  <p class="lead">A small founding crew building and running the club's puzzle "heists" — each one teaching a real CS or security concept through solving it, not lecturing about it.</p>
+  <div class="crew">
+    <div class="member">
+      <div class="role">Puzzle Design Lead</div>
+      <div class="name">Name TBD</div>
+      <div class="blurb">Writes each layer's core challenge and difficulty curve.</div>
+    </div>
+    <div class="member">
+      <div class="role">Build Lead</div>
+      <div class="name">Name TBD</div>
+      <div class="blurb">Owns the website, the sign-in system, and the scoring backend.</div>
+    </div>
+    <div class="member">
+      <div class="role">Events Lead</div>
+      <div class="name">Name TBD</div>
+      <div class="blurb">Runs meetings, recruiting, and the live parts of each heist.</div>
+    </div>
+    <div class="member">
+      <div class="role">Faculty Advisor</div>
+      <div class="name">TBD</div>
+      <div class="blurb">CS/IST/EECS faculty overseeing the club, per Penn State requirements.</div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="section-label"><b>[ 02 ]</b> HOW IT WORKS</div>
+  <h2>Every job runs the same way</h2>
+  <p class="lead">Same rhythm every time: show up, learn the concept, get the piece you need, go pull off the heist.</p>
+  <div class="timeline">
+    <div class="tstep">
+      <div class="wk">STEP_01</div>
+      <div class="desc">Sign in. Your crew's current job is waiting — locked until you're cleared for it.</div>
+    </div>
+    <div class="tstep">
+      <div class="wk">STEP_02</div>
+      <div class="desc">Come to the meeting. We teach that week's concept and hand out the piece the website doesn't have — sometimes a phrase, sometimes a wordlist, sometimes a physical prop.</div>
+    </div>
+    <div class="tstep">
+      <div class="wk">STEP_03</div>
+      <div class="desc">Crack it — solo or with your crew, on your own time, before the next meeting.</div>
+    </div>
+    <div class="tstep">
+      <div class="wk">STEP_04</div>
+      <div class="desc">Stuck? Hints are on the site — each one costs points off your haul. Whoever clears the final job first wins.</div>
+    </div>
+  </div>
+</section>
+
+<section id="signin" style="text-align:center; padding-bottom:120px;">
+  <div class="section-label" style="justify-content:center; display:flex;"><b>[ 03 ]</b> SIGN IN</div>
+  <h2>The vault door isn't open yet.</h2>
+  <p class="lead" style="margin:0 auto 30px;">Sign-in and the puzzle system are still being built. Once it's live, this is where your crew logs in and the first job unlocks.</p>
+  <div class="signin-box">
+    <div class="lock">[ ACCESS LOCKED ]</div>
+    <button class="btn" disabled style="opacity:0.4; cursor:not-allowed;">Sign In — Coming Soon</button>
+    <div class="status">Check back once the club officially launches.</div>
+  </div>
+</section>
+
+<footer>
+  CS HEISTS CLUB <span class="sq">::</span> A PENN STATE STUDENT ORGANIZATION <span class="sq">::</span> STATUS: PLANNING
+</footer>
+
+</div>
+</body>
+</html>
